@@ -4,7 +4,7 @@ import loadPage from '.';
 
 export default () => {
   program
-    .version('0.0.10')
+    .version('0.0.13')
     .arguments('<url>')
     .description('Website Downloader')
     .usage('[options] <Directory> <URL>')
