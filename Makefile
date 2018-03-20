@@ -1,6 +1,6 @@
 
 run:
-	npm run babel-node -- 'src/bin/pageloader.js' 10
+	npm run babel-node -- 'src/bin/pageLoader.js'
 
 install:
 	npm install
