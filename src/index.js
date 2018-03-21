@@ -5,6 +5,12 @@ import process from 'process';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import _ from 'lodash';
+import createDebug from 'debug';
+
+const debug = createDebug('page-loader:other');
+const debugSaving = createDebug('page-loader:save');
+const debugLoading = createDebug('page-loader:load');
+
 
 const urlToStr = (currentUrl) => {
   const { hostname, pathname } = url.parse(currentUrl);
@@ -37,18 +43,25 @@ const makeDir = (dirPath, dirName, outputPath, data) => {
     .then((exists) => {
       if (!exists) {
         fs.mkdir(dirPath);
+        debugSaving('Create folder %s', dirName);
         console.log(`Folder '${dirName}' for local resources was created in directory ${outputPath}\n`);
-      } else console.log(`Use '${dirName}' folder for local resources in directory ${outputPath}\n`);
+      } else console.log(`Used '${dirName}' folder for local resources in directory ${outputPath}\n`);
     });
   return data;
 };
 
 const downloadFile = (link, filePath) => axios.get(link, { responseType: 'stream' })
   .then((response) => {
+    debugLoading('File was download: %s', link);
     response.data.pipe(fs.createWriteStream(filePath));
-    console.log(`File was download: ${link}\n`);
+    debugSaving('File was save as: %s', path.basename(filePath));
+    return { success: true, filePath };
   })
-  .catch(() => console.log(`Problem with download: ${link}\n`));
+  .catch((error) => {
+    debugLoading('Problem with download: %s', path.basename(link));
+    debugSaving('Problem with save: %s', path.basename(filePath));
+    return { success: false, error };
+  });
 
 const downloadSrc = (currentUrl, dirPath, links, html) => Promise.all(links.map((link) => {
   const fileName = getFileName(link);
@@ -67,6 +80,7 @@ const changeTags = (html, dirName) => Object.keys(TagsAttr).reduce((acc, tag) =>
       const newSrc = path.join(dirName, fileName);
       $(e).attr(TagsAttr[tag], newSrc);
     }
+    debug('Change src for %s tags', tag);
   });
   return $.html();
 }, html);
@@ -76,13 +90,14 @@ export default (currentUrl, outputPath = process.cwd()) => {
   const dirName = `${urlToStr(currentUrl)}_files`;
   const pagePath = path.join(outputPath, pageName);
   const dirPath = path.join(outputPath, dirName);
+  makeDir(dirPath, dirName, outputPath);
   return axios.get(currentUrl)
     .then(response => getSrcLinks(response.data))
-    .then(data => makeDir(dirPath, dirName, outputPath, data))
     .then(({ srcLinks, html }) => downloadSrc(currentUrl, dirPath, srcLinks, html))
     .then(html => changeTags(html, dirPath))
-    .then(html => fs.writeFile(pagePath, html))
-    .then(() => {
+    .then((html) => {
+      fs.writeFile(pagePath, html);
+      debugSaving('Page was saved as %s', pageName);
       console.log(`Page was downloaded as '${pageName}' to ${outputPath}`);
     })
     .catch(err => console.log(err.message));

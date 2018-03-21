@@ -2,10 +2,14 @@ import nock from 'nock';
 import httpAdapter from 'axios/lib/adapters/http';
 import axios from 'axios';
 import fs from 'mz/fs';
+import createDebug from 'debug';
 import os from 'os';
 import path from 'path';
 import loadPage from '../src';
 
+const debug = createDebug('page-loader:other');
+const debugSaving = createDebug('page-loader:save');
+const debugLoading = createDebug('page-loader:load');
 
 const currentUrl = 'http://hexlet.io/courses';
 const filename = 'hexlet-io-courses.html';
@@ -35,9 +39,12 @@ const makeTempDir = () => {
 describe('Test', () => {
   it('Rename tags src to local', async () => {
     const outputPath = await makeTempDir();
+    debugSaving('Create temp folder %s', outputPath);
     const filepath = path.join(outputPath, filename);
     await loadPage(currentUrl, outputPath);
+    debugLoading('PAGE WAS CREATED: %s', outputPath);
     const loadedData = await fs.readFile(filepath, 'utf-8');
+    debug('FILE WAS READED %s tags', loadedData);
     const expectedData = `<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
