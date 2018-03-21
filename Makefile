@@ -1,6 +1,6 @@
 
 run:
-	npm run babel-node -- 'src/bin/pageLoader.js'
+	npm run babel-node -- src/bin/pageLoader.js --output /mnt/d/hexlet/pageDownloader https://hexlet.io/courses
 
 install:
 	npm install

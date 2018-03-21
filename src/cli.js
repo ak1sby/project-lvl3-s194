@@ -1,10 +1,10 @@
 import program from 'commander';
-
 import loadPage from '.';
+import { version } from '../package.json';
 
 export default () => {
   program
-    .version('0.0.13')
+    .version(version)
     .arguments('<url>')
     .description('Website Downloader')
     .usage('[options] <Directory> <URL>')

@@ -1,6 +1,6 @@
 {
   "name": "page-loader-grishkevich",
-  "version": "0.0.13",
+  "version": "0.0.15",
   "description": "Hexlet project",
   "main": "dist/index.js",
   "bin": {
@@ -45,9 +45,11 @@
     "jest-cli": "*"
   },
   "dependencies": {
-    "gulp": "*",
     "axios": "^0.18.0",
+    "cheerio": "^1.0.0-rc.2",
     "commander": "^2.15.1",
+    "gulp": "*",
+    "lodash": "^4.17.5",
     "mz": "^2.7.0",
     "nock": "^9.2.3"
   }
