@@ -22,6 +22,6 @@ debug:
 	DEBUG="page-loader:*" npm run babel-node -- src/bin/pageLoader.js --output /mnt/d/hexlet/pageDownloader https://hexlet.io/courses
 
 debugTest:
-	DEBUG="page-loader:*" npm run babel-node -- src/bin/pageLoader.js --output /mnt/d/hexlet/pageDownloader https://hexlet.io/courses
+	DEBUG="page-loader:*" DEBUG="page-loader:*" npm test
 
 

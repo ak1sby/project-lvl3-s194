@@ -11,16 +11,17 @@ const debug = createDebug('page-loader:other');
 const debugSaving = createDebug('page-loader:save');
 const debugLoading = createDebug('page-loader:load');
 
-
 const urlToStr = (currentUrl) => {
   const { hostname, pathname } = url.parse(currentUrl);
   const str = `${hostname}${pathname}`;
   const newStr = str.replace(/[^a-zA-Z0-9]+/gi, '-');
-  return newStr[newStr.length - 1] === '-' ? newStr.slice(0, newStr.length - 1) : newStr;
+  return _.trim(newStr, '-');
 };
 
-const getFileName = (str) => {
-  const { dir, name, ext } = path.parse(str);
+const getFileName = (link) => {
+  const { dir, name } = path.parse(link);
+  const { pathname } = url.parse(link);
+  const { ext } = path.parse(pathname);
   const newStr = `${urlToStr(dir)}-${name}`;
   return `${(newStr).replace(/[^a-zA-Z0-9]+/gi, '-')}${ext}`;
 };
@@ -38,46 +39,49 @@ const getSrcLinks = (html) => {
   return { srcLinks, html };
 };
 
-const makeDir = (dirPath, dirName, outputPath, data) => {
-  fs.exists(dirPath)
-    .then((exists) => {
-      if (!exists) {
-        fs.mkdir(dirPath);
-        debugSaving('Create folder %s', dirName);
-        console.log(`Folder '${dirName}' for local resources was created in directory ${outputPath}\n`);
-      } else console.log(`Used '${dirName}' folder for local resources in directory ${outputPath}\n`);
-    });
-  return data;
-};
+const makeDir = (dirPath, response) => fs.mkdir(dirPath)
+  .then(() => {
+    debugSaving('Folder was create %s', dirPath);
+    return response;
+  });
 
 const downloadFile = (link, filePath) => axios.get(link, { responseType: 'stream' })
   .then((response) => {
-    debugLoading('File was download: %s', link);
     response.data.pipe(fs.createWriteStream(filePath));
-    debugSaving('File was save as: %s', path.basename(filePath));
+  })
+  .then(() => {
+    debugLoading('File was download: %s', link);
     return { success: true, filePath };
   })
   .catch((error) => {
-    debugLoading('Problem with download: %s', path.basename(link));
-    debugSaving('Problem with save: %s', path.basename(filePath));
+    debugLoading('Can`t download: %s', link);
     return { success: false, error };
   });
 
 const downloadSrc = (currentUrl, dirPath, links, html) => Promise.all(links.map((link) => {
+  const { ext } = path.parse(link);
   const fileName = getFileName(link);
   const srcUrl = url.resolve(currentUrl, link);
-  const filePath = path.resolve(dirPath, fileName);
-  return downloadFile(srcUrl, filePath);
-})).then(() => html);
-
+  const dirPathExt = path.resolve(dirPath, _.trim(ext, '.'));
+  const filePath = path.resolve(dirPathExt, fileName);
+  return fs.mkdir(dirPathExt)
+    .then(() => downloadFile(srcUrl, filePath))
+    .catch(() => downloadFile(srcUrl, filePath));
+})).then((data) => {
+  const downloadFiles = data.filter(e => e.success);
+  const procentDownloadFilses = (downloadFiles.length / data.length) * 100;
+  console.log(`Was downloaded : ${downloadFiles.length} of ${data.length} (${procentDownloadFilses} %)`);
+  return html;
+});
 
 const changeTags = (html, dirName) => Object.keys(TagsAttr).reduce((acc, tag) => {
   const $ = cheerio.load(acc);
   $(tag).each((i, e) => {
     const oldSrc = $(e).attr(TagsAttr[tag]);
     if (oldSrc) {
+      const { ext } = path.parse(oldSrc);
       const fileName = getFileName(oldSrc);
-      const newSrc = path.join(dirName, fileName);
+      const newSrc = path.join(dirName, _.trim(ext, '.'), fileName);
       $(e).attr(TagsAttr[tag], newSrc);
     }
     debug('Change src for %s tags', tag);
@@ -90,15 +94,15 @@ export default (currentUrl, outputPath = process.cwd()) => {
   const dirName = `${urlToStr(currentUrl)}_files`;
   const pagePath = path.join(outputPath, pageName);
   const dirPath = path.join(outputPath, dirName);
-  makeDir(dirPath, dirName, outputPath);
-  return axios.get(currentUrl)
+  return fs.exists(outputPath)
+    .then(() => axios.get(currentUrl))
     .then(response => getSrcLinks(response.data))
+    .then(response => makeDir(dirPath, response))
     .then(({ srcLinks, html }) => downloadSrc(currentUrl, dirPath, srcLinks, html))
-    .then(html => changeTags(html, dirPath))
+    .then(html => changeTags(html, dirName))
     .then((html) => {
-      fs.writeFile(pagePath, html);
-      debugSaving('Page was saved as %s', pageName);
-      console.log(`Page was downloaded as '${pageName}' to ${outputPath}`);
+      fs.writeFile(pagePath, html)
+        .then(() => console.log(`Page was downloaded as '${pageName}' to ${outputPath}`));
     })
-    .catch(err => console.log(err.message));
+    .catch(err => console.error(err));
 };
