@@ -1,10 +1,10 @@
 {
   "name": "page-loader-grishkevich",
-  "version": "0.0.18",
+  "version": "0.0.21",
   "description": "Hexlet project",
   "main": "dist/index.js",
   "bin": {
-    "pageloader": "dist/bin/pageLoader.js"
+    "pageloader": "dist/bin/Start.js"
   },
   "engines": {
     "node": "8"
@@ -28,27 +28,27 @@
     "babel-cli": "*",
     "babel-core": "*",
     "babel-eslint": "*",
-    "babel-jest": "*",
+    "babel-jest": "^22.4.3",
     "babel-plugin-transform-runtime": "*",
     "babel-preset-env": "*",
     "babel-preset-flow": "*",
     "babel-preset-stage-0": "*",
-    "eslint": "*",
+    "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "*",
     "eslint-plugin-flowtype": "*",
     "eslint-plugin-import": "*",
     "eslint-plugin-jest": "*",
     "flow-bin": "^0.68.0",
     "flow-typed": "*",
-    "jest": "^22.4.2",
-    "jest-cli": "*"
+    "jest": "^22.4.3",
+    "jest-cli": "^22.4.3"
   },
   "dependencies": {
     "axios": "^0.18.0",
     "cheerio": "^1.0.0-rc.2",
     "commander": "^2.15.1",
     "debug": "*",
-    "gulp": "*",
+    "gulp": "^4.0.0",
     "listr": "^0.13.0",
     "lodash": "^4.17.5",
     "mz": "^2.7.0",
