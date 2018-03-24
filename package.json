@@ -1,6 +1,6 @@
 {
   "name": "page-loader-grishkevich",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "Hexlet project",
   "main": "dist/index.js",
   "bin": {
@@ -48,8 +48,8 @@
     "cheerio": "^1.0.0-rc.2",
     "commander": "^2.15.1",
     "debug": "*",
-    "errno": "^0.1.7",
     "gulp": "*",
+    "listr": "^0.13.0",
     "lodash": "^4.17.5",
     "mz": "^2.7.0",
     "nock": "^9.2.3"

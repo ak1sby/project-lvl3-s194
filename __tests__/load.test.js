@@ -5,12 +5,13 @@ import fs from 'mz/fs';
 import createDebug from 'debug';
 import os from 'os';
 import path from 'path';
-import loadPage from '../src';
+import loadPage from '../src/siteLoader';
 
 const debugSaving = createDebug('page-loader:save');
 
 describe('Test', () => {
   const currentUrl = 'http://hexlet.io/courses';
+  const currentUrl2 = 'http://hexlet.ru/courses';
   const filename = 'hexlet-io-courses.html';
   const sourcePage = `${__dirname}/__fixtures__/page.html`;
   const expectedPage = `${__dirname}/__fixtures__/expectedPage.html`;
@@ -20,6 +21,14 @@ describe('Test', () => {
   beforeAll(() => {
     axios.defaults.adapter = httpAdapter;
     nock.disableNetConnect();
+  });
+
+  const makeTempDir = () => {
+    const tmpDir = `${os.tmpdir()}${path.sep}`;
+    return fs.mkdtemp(tmpDir);
+  };
+
+  it('Rename tags src to local and download 1 of 2', async () => {
     nock('http://hexlet.io')
       .get('/courses')
       .replyWithFile(200, sourcePage);
@@ -29,14 +38,7 @@ describe('Test', () => {
       .replyWithFile(200, pathFile1)
       .get('/assets/application-b7be9f361552c63ed71e93ffc3e59a01703825afea41ff93b20f9988bfb5c9fb.css')
       .replyWithFile(404, pathFile2);
-  });
 
-  const makeTempDir = () => {
-    const tmpDir = `${os.tmpdir()}${path.sep}`;
-    return fs.mkdtemp(tmpDir);
-  };
-
-  it('Rename tags src to local', async () => {
     const outputPath = await makeTempDir();
     debugSaving('Create temp folder %s', outputPath);
     const filepath = path.join(outputPath, filename);
@@ -45,4 +47,30 @@ describe('Test', () => {
     const expectedData = await fs.readFile(expectedPage, 'utf-8');
     expect(loadedData).toEqual(expectedData);
   });
+
+  it('Directory not exist', async () => {
+    const outputPath = 'badPath';
+    nock('http://hexlet.ru')
+      .get('/courses')
+      .replyWithFile(200, 'data');
+    try {
+      await loadPage(currentUrl2, outputPath);
+    } catch (err) {
+      expect(err.message).toMatch('no such file or directory');
+    }
+  });
+
+  it('Page not Found', async () => {
+    const outputPath = await makeTempDir();
+    const badUrl = 'http://BadUrl.io';
+    nock(badUrl)
+      .get('/')
+      .replyWithFile(404, sourcePage);
+    try {
+      await loadPage(badUrl, outputPath);
+    } catch (err) {
+      expect(err.message).toMatch('Request failed with status code 404');
+    }
+  });
 });
+
