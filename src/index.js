@@ -3,7 +3,7 @@ import process from 'process';
 import axios from 'axios';
 import cheerio from 'cheerio';
 import loadPage from './pageLoader';
-import errorHandler from './errorHandler';
+import { normalizeURL } from './utils';
 
 // const downloadedPages = new Set();
 
@@ -13,27 +13,20 @@ const getFiltredLinks = (links, currentUrl) => links.filter((link) => {
   return mainPageHost === linkHostName || !linkHostName;
 });
 
-const normalizeLinks = (links, currentUrl) => links.map((link) => {
-  const { protocol, hostname } = url.parse(currentUrl);
-  const linkHostName = url.parse(link).hostname;
-  return !linkHostName ? `${protocol}//${hostname}${link}` : link;
-});
-
 const getPageLinks = (html, currentUrl) => {
   const $ = cheerio.load(html);
   const pageLinks = $('a').map((i, e) => ($(e).attr('href'))).get();
   const filtredLinks = getFiltredLinks(pageLinks, currentUrl);
-  return normalizeLinks(filtredLinks, currentUrl);
+  return normalizeURL(filtredLinks, currentUrl);
 };
 
-export default (currentUrl, outputPath = process.cwd(), page = 1) => {
+export default (targetURL, outputPath = process.cwd(), page = 1) => {
   if (page === 1) {
-    return loadPage(currentUrl, outputPath);
+    return loadPage(targetURL, outputPath);
   }
-  return axios.get(currentUrl)
-    .then(response => getPageLinks(response.data, currentUrl))
+  return axios.get(targetURL)
+    .then(response => getPageLinks(response.data, targetURL))
     .then((links) => {
-      links.map(link => loadPage(link, currentUrl));
-    })
-    .catch(err => errorHandler(err, currentUrl));
+      links.map(link => loadPage(link, outputPath));
+    });
 };

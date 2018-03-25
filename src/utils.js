@@ -12,6 +12,7 @@ const urlToStr = (currentUrl) => {
   const newStr = str.replace(/[^a-zA-Z0-9]+/gi, '-');
   return _.trim(newStr, '-');
 };
+
 const getExtFromLink = (link) => {
   const { pathname } = url.parse(link);
   const { ext } = path.parse(pathname);
@@ -25,10 +26,20 @@ const getFileName = (link) => {
   return `${(newStr).replace(/[^a-zA-Z0-9]+/gi, '-')}${ext}`;
 };
 
-const makeDir = (dirPath, data) => fs.mkdir(dirPath)
+const normalizeURL = (arrayOfURLs, targetURL) => arrayOfURLs.map((currentURL) => {
+  const urlHostName = url.parse(currentURL).hostname;
+  return !urlHostName ? url.resolve(targetURL, currentURL) : currentURL;
+});
+
+const makeDir = dirPath => fs.mkdir(dirPath)
   .then(() => {
     debugSaving('Folder was create %s', dirPath);
-    return data;
   });
 
-export { urlToStr, getExtFromLink, getFileName, makeDir };
+const writeFile = (filePath, data) => fs.writeFile(filePath, data)
+  .then(() => {
+    debugSaving('File was create %s', filePath);
+  })
+  .catch(() => console.log('asdasd'));
+
+export { urlToStr, getExtFromLink, getFileName, makeDir, writeFile, normalizeURL };

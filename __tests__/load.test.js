@@ -5,7 +5,7 @@ import fs from 'mz/fs';
 import createDebug from 'debug';
 import os from 'os';
 import path from 'path';
-import loadPage from '../src/siteLoader';
+import loadPage from '../src';
 
 const debugSaving = createDebug('page-loader:save');
 
@@ -52,11 +52,11 @@ describe('Test', () => {
     const outputPath = 'badPath';
     nock('http://hexlet.ru')
       .get('/courses')
-      .replyWithFile(200, 'data');
+      .reply(200);
     try {
       await loadPage(currentUrl2, outputPath);
     } catch (err) {
-      expect(err.message).toMatch('no such file or directory');
+      expect(err.code).toBe('ENOENT');
     }
   });
 
@@ -65,11 +65,11 @@ describe('Test', () => {
     const badUrl = 'http://BadUrl.io';
     nock(badUrl)
       .get('/')
-      .replyWithFile(404, sourcePage);
+      .reply(404);
     try {
       await loadPage(badUrl, outputPath);
     } catch (err) {
-      expect(err.message).toMatch('Request failed with status code 404');
+      expect(err.response.status).toBe(404);
     }
   });
 });

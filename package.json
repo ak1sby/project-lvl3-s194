@@ -1,10 +1,10 @@
 {
   "name": "page-loader-grishkevich",
-  "version": "0.0.21",
+  "version": "0.1.0",
   "description": "Hexlet project",
   "main": "dist/index.js",
   "bin": {
-    "pageloader": "dist/bin/Start.js"
+    "pageloader": "dist/bin/start.js"
   },
   "engines": {
     "node": "8"
