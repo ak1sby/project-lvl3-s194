@@ -24,3 +24,7 @@ debug:
 debugTest:
 	DEBUG="page-loader:*" DEBUG="page-loader:*" npm test
 	
+test-coverage:
+	npm test -- --coverage
+
+	
