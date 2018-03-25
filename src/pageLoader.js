@@ -40,17 +40,17 @@ const getPercentOfsuccess = (array) => {
   return console.log(`Downloaded : ${arrayWithTrueValues.length} of ${array.length} (${percentOfsuccess} %)`);
 };
 
-const getResourcesURL = ($) => {
-  const arrayOfURLs = Object.keys(TagsAttr).map(tag => $(tag)
+const getResourcesLinks = ($) => {
+  const arrayOfLinks = Object.keys(TagsAttr).map(tag => $(tag)
     .map((i, e) => ($(e).attr(TagsAttr[tag]))).get());
-  const normalizedArrayOfURLs = _.union(_.flatten(arrayOfURLs));
-  return normalizedArrayOfURLs;
+  const normalizedArrayOfLinks = _.union(_.flatten(arrayOfLinks));
+  return normalizedArrayOfLinks;
 };
 
 const downloadAllResources = (targetURL, pathForLoading, $) => {
-  const arrayOfURLs = getResourcesURL($);
-  const normalizedURL = normalizeURL(arrayOfURLs, targetURL);
-  return Promise.all(normalizedURL
+  const arrayOfLinks = getResourcesLinks($);
+  const arrayOfURLs = arrayOfLinks.map(link => normalizeURL(link, targetURL));
+  return Promise.all(arrayOfURLs
     .map((currentURL) => {
       const loadTask = makeLoadTask(currentURL, pathForLoading);
       return loadTask.run()
@@ -61,23 +61,25 @@ const downloadAllResources = (targetURL, pathForLoading, $) => {
     .then(() => $);
 };
 
-const makeLocalPathFromURL = (targetURL, dirName) => {
-  const fileName = getFileName(targetURL);
+const linkToLocalPath = (link, templateURL, dirName) => {
+  const normalizedURL = normalizeURL(link, templateURL);
+  const fileName = getFileName(normalizedURL);
   const localPath = path.join(dirName, fileName);
   return localPath;
 };
 
-const changeResourcesURLstoLocal = ($, dirName) => Object.keys(TagsAttr).reduce((acc, tag) => {
-  $(tag).each((i, e) => {
-    const targetURL = $(e).attr(TagsAttr[tag]);
-    if (targetURL) {
-      const localPath = makeLocalPathFromURL(targetURL, dirName);
-      $(e).attr(TagsAttr[tag], localPath);
-      debug(`Change URL from: ${targetURL}\nTo local path: ${localPath}\n`);
-    }
-  });
-  return $.html();
-}, $);
+const resourcesLinkstoLocal = ($, templateURL, dirName) => Object.keys(TagsAttr)
+  .reduce((acc, tag) => {
+    $(tag).each((i, e) => {
+      const link = $(e).attr(TagsAttr[tag]);
+      if (link) {
+        const localPath = linkToLocalPath(link, templateURL, dirName);
+        $(e).attr(TagsAttr[tag], localPath);
+        debug(`Change URL from: ${link}\nTo local path: ${localPath}\n`);
+      }
+    });
+    return $.html();
+  }, $);
 
 export default (targetURL, outputPath = process.cwd()) => {
   const pageName = `${urlToStr(targetURL)}.html`;
@@ -88,7 +90,7 @@ export default (targetURL, outputPath = process.cwd()) => {
     .then(() => axios.get(targetURL))
     .then(response => cheerio.load(response.data))
     .then($ => downloadAllResources(targetURL, dirPath, $))
-    .then($ => changeResourcesURLstoLocal($, dirName))
+    .then($ => resourcesLinkstoLocal($, targetURL, dirName))
     .then(html => writeFile(pagePath, html))
     .then(() => console.log(`Page was downloaded as '${pageName}' to ${outputPath}`))
     .catch((err) => {

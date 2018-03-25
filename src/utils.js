@@ -26,10 +26,10 @@ const getFileName = (link) => {
   return `${(newStr).replace(/[^a-zA-Z0-9]+/gi, '-')}${ext}`;
 };
 
-const normalizeURL = (arrayOfURLs, targetURL) => arrayOfURLs.map((currentURL) => {
-  const urlHostName = url.parse(currentURL).hostname;
-  return !urlHostName ? url.resolve(targetURL, currentURL) : currentURL;
-});
+const normalizeURL = (link, templateURL) => {
+  const urlHostName = url.parse(link).hostname;
+  return !urlHostName ? url.resolve(templateURL, link) : link;
+};
 
 const makeDir = dirPath => fs.mkdir(dirPath)
   .then(() => {

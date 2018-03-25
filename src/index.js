@@ -7,17 +7,18 @@ import { normalizeURL } from './utils';
 
 // const downloadedPages = new Set();
 
-const getFiltredLinks = (links, currentUrl) => links.filter((link) => {
-  const mainPageHost = url.parse(currentUrl).hostname;
-  const linkHostName = url.parse(link).hostname;
-  return mainPageHost === linkHostName || !linkHostName;
+const getFiltredLinks = (links, templateURL) => links.filter((link) => {
+  const templateHost = url.parse(templateURL).hostname;
+  const linkHost = url.parse(link).hostname;
+  return templateHost === linkHost || !linkHost;
 });
 
 const getPageLinks = (html, currentUrl) => {
   const $ = cheerio.load(html);
   const pageLinks = $('a').map((i, e) => ($(e).attr('href'))).get();
   const filtredLinks = getFiltredLinks(pageLinks, currentUrl);
-  return normalizeURL(filtredLinks, currentUrl);
+  const normalizedURLs = filtredLinks.map(link => normalizeURL(link, currentUrl));
+  return normalizedURLs;
 };
 
 export default (targetURL, outputPath = process.cwd(), page = 1) => {
