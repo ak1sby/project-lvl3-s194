@@ -1,6 +1,6 @@
 
 run:
-	 npm run babel-node -- src/bin/start.js --output /mnt/d/hexlet/pageDownloader https://ru.hexlet.io/courses
+	 npm run babel-node -- src/bin/start.js --output /mnt/d/hexlet/pageDownloader https://www.onliner.by/
 
 install:
 	npm install
@@ -23,7 +23,7 @@ debug:
 
 debugTest:
 	DEBUG="page-loader:*" DEBUG="page-loader:*" npm test
-	
+
 test-coverage:
 	npm test -- --coverage
 

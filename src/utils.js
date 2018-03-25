@@ -39,7 +39,6 @@ const makeDir = dirPath => fs.mkdir(dirPath)
 const writeFile = (filePath, data) => fs.writeFile(filePath, data)
   .then(() => {
     debugSaving('File was create %s', filePath);
-  })
-  .catch(() => console.log('asdasd'));
+  });
 
 export { urlToStr, getExtFromLink, getFileName, makeDir, writeFile, normalizeURL };

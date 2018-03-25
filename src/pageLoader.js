@@ -42,10 +42,7 @@ const getPercentOfsuccess = (array) => {
 
 const getResourcesLinks = ($) => {
   const arrayOfLinks = Object.keys(TagsAttr).map(tag => $(tag)
-    .map((i, e) => {
-      console.log($('img').attr('http'));
-      return ($(e).attr(TagsAttr[tag]));
-    }).get());
+    .map((i, e) => ($(e).attr(TagsAttr[tag]))).get());
   const normalizedArrayOfLinks = _.union(_.flatten(arrayOfLinks));
   return normalizedArrayOfLinks;
 };
