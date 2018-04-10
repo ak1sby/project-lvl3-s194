@@ -1,6 +1,6 @@
 {
   "name": "page-loader-grishkevich",
-  "version": "0.1.2",
+  "version": "0.2.1",
   "description": "Hexlet project",
   "main": "dist/index.js",
   "bin": {

@@ -1,33 +1,74 @@
-import url from 'url';
 import process from 'process';
-import axios from 'axios';
-import cheerio from 'cheerio';
+import url from 'url';
+import createDebug from 'debug';
 import loadPage from './pageLoader';
-import { normalizeURL } from './utils';
+import { normalizeURL, getResourcesLinks, makeTask } from './utils';
+import getErrorMessage from './errors';
 
-// const downloadedPages = new Set();
+const debug = createDebug('page-loader:other');
 
-const getFiltredLinks = (links, templateURL) => links.filter((link) => {
+const getSameHostURLs = (links, templateURL) => links.filter((link) => {
   const templateHost = url.parse(templateURL).hostname;
   const linkHost = url.parse(link).hostname;
   return templateHost === linkHost || !linkHost;
 });
 
-const getPageLinks = (html, currentUrl) => {
-  const $ = cheerio.load(html);
-  const pageLinks = $('a').map((i, e) => ($(e).attr('href'))).get();
-  const filtredLinks = getFiltredLinks(pageLinks, currentUrl);
-  const normalizedURLs = filtredLinks.map(link => normalizeURL(link, currentUrl));
-  return normalizedURLs;
-};
-
-export default (targetURL, outputPath = process.cwd(), page = 1) => {
-  if (page === 1) {
-    return loadPage(targetURL, outputPath);
+const iter = (acc, array, callback, innerFn = () => {}) => {
+  if (array.length < 1) {
+    debug('Array is empty\n');
+    return acc;
   }
-  return axios.get(targetURL)
-    .then(response => getPageLinks(response.data, targetURL))
-    .then((links) => {
-      links.map(link => loadPage(link, outputPath));
+  const [head, ...rest] = array;
+  return callback(head)
+    .then((data) => {
+      if (data) {
+        return innerFn(head, data);
+      }
+      return innerFn(head);
+    })
+    .then((data) => {
+      if (data) {
+        return iter([...acc, ...data], rest, callback, innerFn);
+      }
+      return iter(acc, rest, callback, innerFn);
+    })
+    .catch((err) => {
+      console.error(getErrorMessage(err, head));
+      return iter(acc, rest, callback, innerFn);
     });
 };
+
+const getAllURLsFromPages = (array, depth) => {
+  if (depth < 1) {
+    return new Promise(resolve => resolve(array));
+  }
+  return iter(
+    [],
+    array,
+    targetURL => makeTask(getResourcesLinks, 'Getting links from', targetURL, { a: ['href'] }),
+    (targetURL, arrayOfLinks) => {
+      const normalizedArrayOfLinks = arrayOfLinks.map(link => normalizeURL(link, targetURL));
+      const filtredLinks = getSameHostURLs(normalizedArrayOfLinks, targetURL);
+      return filtredLinks;
+    },
+  )
+    .then(data => getAllURLsFromPages(new Set(data), depth - 1));
+};
+
+const getSite = (targetURL, outputPath = process.cwd(), depth = 0) => {
+  const loadTask = depth === '0';
+  return getAllURLsFromPages([targetURL], depth, [targetURL])
+    .then(filtredLinks => iter(
+      [],
+      filtredLinks,
+      link => (loadTask ? loadPage(link, outputPath, loadTask) :
+        makeTask(loadPage, 'Loading', link, outputPath, loadTask))
+      ,
+    ))
+    .catch((err) => {
+      console.error(getErrorMessage(err, targetURL));
+      return Promise.reject(err);
+    });
+};
+
+export default getSite;

@@ -9,8 +9,9 @@ export default () => {
     .description('Website Downloader')
     .usage('[options] <Directory> <URL>')
     .option('-o, --output [path]', 'output path')
+    .option('-d, --depth [depth]', 'depth of loading')
     .action((url) => {
-      loadSite(url, program.output)
+      loadSite(url, program.output, program.depth)
         .catch(() => process.exit(1));
     })
     .parse(process.argv);

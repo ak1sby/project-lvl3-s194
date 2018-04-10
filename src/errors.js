@@ -1,19 +1,19 @@
 const getErrorMessageByStatus = (err, link) => {
   switch (err.response.status) {
     case 403:
-      return `Code: ${err.response.status} Access Denied\nFailed download: ${link}\n`;
+      return `Code: ${err.response.status} Access Denied.\nFailed download: ${link}\n`;
 
     case 404:
-      return `Code: ${err.response.status} Resourse Not Found\nFailed download: ${link}\n`;
+      return `Code: ${err.response.status} Resourse Not Found.\nFailed download: ${link}\n`;
 
     case 429:
-      return `Code: ${err.response.status} Too Many Requests\nRetry after: ${err.response.headers['retry-after']}\nFailed download: ${link}\n`;
+      return `Code: ${err.response.status} Too Many Requests.\nRetry after: ${err.response.headers['retry-after']}\nFailed download: ${link}\n`;
 
     case 500:
-      return `Code: ${err.response.status} Internal Server Error\nFailed download: ${link}\n`;
+      return `Code: ${err.response.status} Internal Server Error.\nFailed download: ${link}\n`;
 
     case 503:
-      return `Code: ${err.response.status} Server Unavailable\nFailed download: ${link}\n`;
+      return `Code: ${err.response.status} Server Unavailable.\nFailed download: ${link}\n`;
 
     default:
       return `Unknown code: ${err.response.code}`;
