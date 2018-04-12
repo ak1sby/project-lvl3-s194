@@ -6,6 +6,8 @@
 
 [![Build Status](https://travis-ci.org/ak1sby/project-lvl3-s194.svg?branch=master)](https://travis-ci.org/ak1sby/project-lvl3-s194)
 
+[![asciicast](https://asciinema.org/a/FzhuglLclx8ALxVa4tiqQR2OG.png)](https://asciinema.org/a/FzhuglLclx8ALxVa4tiqQR2OG)
+
 ## Install:
 ```sh
     npm install -g page-loader-grishkevich
