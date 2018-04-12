@@ -2,7 +2,7 @@ import fs from 'mz/fs';
 import path from 'path';
 import process from 'process';
 import axios from 'axios';
-import { getFileName, makeDir, normalizeURL, resourcesLinkstoLocal, getResourcesLinks, getDirPaths, makeTask } from './utils';
+import { getFileName, makeDir, normalizeURL, resourcesLinkstoLocal, getResourcesLinks, getPaths, makeTask } from './utils';
 
 const tagsAttr = {
   img: ['src', 'data-original'],
@@ -27,10 +27,10 @@ const downloadAllResources = (arrayOfURLs, pathForLoading, loadTask) => Promise.
     downloadFile(currentURL, pathForLoading))));
 
 export default (targetURL, outputPath = process.cwd(), loadTask = false) => {
-  const { dirPath } = getDirPaths(targetURL, outputPath);
+  const { dirPath } = getPaths(targetURL, outputPath);
   return makeDir(dirPath)
     .then(() => getResourcesLinks(targetURL, tagsAttr))
+    .then(data => resourcesLinkstoLocal(targetURL, outputPath, tagsAttr, data))
     .then(arrayOfLinks => arrayOfLinks.map(link => normalizeURL(link, targetURL)))
-    .then(arrayOfURLs => downloadAllResources(arrayOfURLs, dirPath, loadTask))
-    .then(() => resourcesLinkstoLocal(targetURL, outputPath, tagsAttr));
+    .then(arrayOfURLs => downloadAllResources(arrayOfURLs, dirPath, loadTask));
 };

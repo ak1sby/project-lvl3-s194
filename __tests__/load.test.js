@@ -42,7 +42,7 @@ describe('Test', () => {
     const outputPath = await makeTempDir();
     debugSaving('Create temp folder %s', outputPath);
     const filepath = path.join(outputPath, filename);
-    await loadPage(currentUrl, outputPath);
+    await loadPage(currentUrl, outputPath, 0);
     const loadedData = await fs.readFile(filepath, 'utf-8');
     const expectedData = await fs.readFile(expectedPage, 'utf-8');
     expect(loadedData).toEqual(expectedData);

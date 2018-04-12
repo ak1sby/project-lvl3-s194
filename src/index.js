@@ -2,7 +2,7 @@ import process from 'process';
 import url from 'url';
 import createDebug from 'debug';
 import loadPage from './pageLoader';
-import { normalizeURL, getResourcesLinks, makeTask } from './utils';
+import { normalizeURL, getResourcesLinks, makeTask, getPercentOfsuccess } from './utils';
 import getErrorMessage from './errors';
 
 const debug = createDebug('page-loader:other');
@@ -46,9 +46,9 @@ const getAllURLsFromPages = (array, depth) => {
     [],
     array,
     targetURL => makeTask(getResourcesLinks, 'Getting links from', targetURL, { a: ['href'] }),
-    (targetURL, arrayOfLinks) => {
-      const normalizedArrayOfLinks = arrayOfLinks.map(link => normalizeURL(link, targetURL));
-      const filtredLinks = getSameHostURLs(normalizedArrayOfLinks, targetURL);
+    (targetURL, { resourcesLinks }) => {
+      const normalizedArrayOfLink = resourcesLinks.map(link => normalizeURL(link, targetURL));
+      const filtredLinks = getSameHostURLs(normalizedArrayOfLink, targetURL);
       return filtredLinks;
     },
   )
@@ -61,8 +61,15 @@ const getSite = (targetURL, outputPath = process.cwd(), depth = 0) => {
     .then(filtredLinks => iter(
       [],
       filtredLinks,
-      link => (loadTask ? loadPage(link, outputPath, loadTask) :
-        makeTask(loadPage, 'Loading', link, outputPath, loadTask))
+      (link) => {
+        const result = loadTask ? loadPage(link, outputPath, loadTask) :
+          makeTask(loadPage, 'Loading', link, outputPath, loadTask);
+        return result.then((data) => {
+          if (data) {
+            getPercentOfsuccess(data);
+          }
+        });
+      }
       ,
     ))
     .catch((err) => {
