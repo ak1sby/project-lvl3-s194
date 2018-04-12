@@ -18,4 +18,4 @@
                           Path              URL             depth of loading
 ```                
 
-<script src="https://asciinema.org/a/FzhuglLclx8ALxVa4tiqQR2OG.js" id="asciicast-FzhuglLclx8ALxVa4tiqQR2OG" async></script>
+https://asciinema.org/a/FzhuglLclx8ALxVa4tiqQR2OG
