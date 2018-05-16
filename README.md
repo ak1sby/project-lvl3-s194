@@ -17,7 +17,4 @@
 ```sh
     pageloader --output /var/tmp https://hexlet.io/courses --depth 1
                            |                 |                     |
-                          Path              URL             depth of loading
-```                
-
-https://asciinema.org/a/FzhuglLclx8ALxVa4tiqQR2OG
+                          Path              URL             depth of loading```                
